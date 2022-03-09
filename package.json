@@ -1,6 +1,9 @@
 {
   "name": "pokemon_app",
   "version": "1.0.0",
+  "engines": {
+    "node": "16.14.0"
+  },
   "description": "",
   "main": "server.js",
   "scripts": {
@@ -16,6 +19,7 @@
     "express-react-views": "^0.11.0",
     "mongoose": "^6.2.5",
     "react": "^16.14.0",
-    "react-dom": "^16.14.0"
+    "react-dom": "^16.14.0",
+    "uninstall": "^0.0.0"
   }
 }
