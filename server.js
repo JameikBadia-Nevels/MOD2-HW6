@@ -1,23 +1,32 @@
 require ('dotenv').config()
+
 const express = require('express')
-
-const app = express()
-
-const PORT = process.env.PORT || 3000
-
-const mongoose = require('mongoose');
 
 const Pokemon = require('./models/pokemon.js')
 
+const app = express()
+
+const mongoose = require('mongoose');
+
+const { findByIdAndRemove } = require('./models/pokemon.js');
+
+const methodOverride = require('method-override')
+
+const PORT = process.env.PORT || 3000
+
+//MUST BE FIRST
+app.use((req,res,next)=>{
+    console.log('I run all da bloodclat routes')
+    next()
+})
+
 app.use(express.urlencoded({extended:true}))
+app.use(methodOverride('_method'))
 
 //set up view engine
 app.set('view engine', 'jsx')
 app.engine('jsx', require('express-react-views').createEngine())
 
-app.get('/', (req,res)=>{
-    res.send('Welcome to the Pokemon App!')
-})
 app.get('/pokemon/seed', (req, res)=>{
     Pokemon.create([
         {name: "bulbasaur", img: "http://img.pokemondb.net/artwork/bulbasaur"},
@@ -37,9 +46,12 @@ app.get('/pokemon', (req,res) => {
         res.render('Index',{
             pokemon: allPokemon
             })
-        }) //{fruits:fruits})
+        }) 
      })
      
+app.get('/', (req,res)=>{
+     res.send('Welcome to the Pokemon App!')
+})
 
 //a page that will allow us to create a new fruit 
 app.get('/pokemon/new', (req,res) =>{
@@ -52,16 +64,44 @@ app.post('/pokemon/', (req,res) =>{
 		res.redirect('/pokemon')
 		})
 })
-
+//Show page
 app.get('/pokemon/:id', (req,res) =>{
     Pokemon.findById(req.params.id, (err,foundPokemon)=>{
 		res.render('Show', {
 		pokemon: foundPokemon
 		})
 	})
-    // res.render('Show', {
-    //     pokemon: Pokemon[req.params.id]})
 })
+
+//DELETE Route
+app.delete('/pokemon/:id', (req, res)=>{
+        Pokemon.findByIdAndRemove(req.params.id, (err, data)=>{
+        res.redirect('/pokemon')
+    })
+});
+
+//Edit Route
+app.get('/pokemon/:id/edit', (req, res)=>{
+    Pokemon.findById(req.params.id, (err, foundPokemon)=>{ //find the Pokemon
+      if(!err){
+        res.render(
+    		  'Edit',
+    		{
+    			pokemon: foundPokemon //pass in found Pokemon
+    		}
+    	);
+    } else {
+      res.send({ msg: err.message })
+    }
+    });
+});
+
+app.put('/pokemon/:id', (req,res) =>{
+    Pokemon.findByIdAndUpdate(req.params.id, req.body, {new:true},(err, updatedModel) =>{
+        res.redirect('/pokemon')
+    })
+})
+
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
